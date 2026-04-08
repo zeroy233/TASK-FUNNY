@@ -54,13 +54,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [quests]);
 
   useEffect(() => {
-    const lastRefresh = localStorage.getItem('questlog_last_refresh');
-    const today = new Date().toDateString();
-    
-    if (lastRefresh !== today) {
-      refreshDailyQuests();
-      localStorage.setItem('questlog_last_refresh', today);
-    }
+    const checkRefresh = () => {
+      const lastRefresh = localStorage.getItem('questlog_last_refresh');
+      const today = new Date().toDateString();
+      
+      if (lastRefresh !== today) {
+        refreshDailyQuests();
+        localStorage.setItem('questlog_last_refresh', today);
+      }
+    };
+
+    // Initial check
+    checkRefresh();
+
+    // Check every minute in case the app stays open past midnight
+    const interval = setInterval(checkRefresh, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const refreshDailyQuests = () => {

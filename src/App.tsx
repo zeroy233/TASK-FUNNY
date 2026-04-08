@@ -103,6 +103,26 @@ const Dashboard = () => {
   const { stats, quests, completeQuest, refreshDailyQuests } = useGame();
   const activeQuests = quests.filter(q => !q.completed);
   const dailyQuests = quests.filter(q => q.isDaily);
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${hours}时 ${minutes}分 ${seconds}秒`);
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+    return () => clearInterval(timer);
+  }, []);
   
   return (
     <div className="max-w-6xl mx-auto pt-32 pb-32 px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -143,15 +163,20 @@ const Dashboard = () => {
               <Zap size={20} />
               今日必做 (每日任务)
             </h3>
-            <button 
-              onClick={() => refreshDailyQuests()}
+            <div className="flex items-center gap-4">
+              <div className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-1 rounded border border-white/5">
+                刷新倒计时: <span className="text-gaming-accent">{timeLeft}</span>
+              </div>
+              <button 
+                onClick={() => refreshDailyQuests()}
               className="px-3 py-1.5 bg-gaming-accent/10 hover:bg-gaming-accent text-gaming-accent hover:text-black border border-gaming-accent/20 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1.5"
             >
               <Plus size={14} />
               领取新任务
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {dailyQuests.map(quest => (
               <div 
                 key={quest.id} 
